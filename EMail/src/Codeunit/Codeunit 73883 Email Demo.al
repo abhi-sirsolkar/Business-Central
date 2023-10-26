@@ -25,9 +25,7 @@ codeunit 73883 Email_Practice
         Report.SaveAs(Report::"Customer - Top 10 List", ReportParameters, ReportFormat::Pdf, OutStr);
         TempBlob.CreateInStream(InStr);
 
-
         Body := '<h3>Dear Team,<br/><br/>I am sharing a report of the hours I have worked this month.<br/><br/>You can see a breakdown of the number of days/hours that I have worked. In total, I have worked (number) or days/hours.<br/><br/>Please can you confirm the total amount I will be paid for this month?<br/><br/>Please confirm when you have received this email and advise me when you have submitted it to the accounts department.<br/><br/>As always, feel free to message me if you have any questions, queries, or concerns about my hours worked this month.<br/><br/><hr><br/>Best regards, <br/> Abhishek Sirsolkar <br/> Trainee - Technical<br/><img src="https://intech-systems.com/wp-content/uploads/2022/10/intech-digital-logo.png" height = "30" width = "80"/>';
-
         EmailMessage.Create('your.email@gmail.com', 'Sample Report', Body, true);
         EmailMessage.AddAttachment('Report.pdf', 'PDF', InStr);
         Email.Send(EmailMessage, Enum::"Email Scenario"::Default);
@@ -55,7 +53,6 @@ codeunit 73883 Email_Practice
         Customer.CalcFields(Balance);
 
         Body := '<h3>Dear Team,<br/><br/>I am sharing a report of the hours I have worked this month.<br/><br/>You can see a breakdown of the number of days/hours that I have worked. In total, I have worked (number) or days/hours.<br/><br/>Please can you confirm the total amount I will be paid for this month?<br/><br/>Please confirm when you have received this email and advise me when you have submitted it to the accounts department.<br/><br/>As always, feel free to message me if you have any questions, queries, or concerns about my hours worked this month.<br/><br/><hr><br/>Best regards, <br/> Abhishek Sirsolkar <br/> Trainee - Technical<br/><img src="https://intech-systems.com/wp-content/uploads/2022/10/intech-digital-logo.png" height = "30" width = "80"/>';
-
         EmailMessage.Create('your.email@gmail.com', 'This is the subject', Body, true);
         Email.OpenInEditorModally(EmailMessage, Enum::"Email Scenario"::Default);
     end;
@@ -79,7 +76,6 @@ codeunit 73883 Email_Practice
         if Selection = 1 then
             MailSent := Email.Send(EmailMessage, Enum::"Email Scenario"::Default);
         if Selection = 2 then begin
-
             MailSent := Email.OpenInEditorModally(
                 EmailMessage, Enum::"Email Scenario"::Default) = Enum::"Email Action"::Sent;
             Cancelled := not MailSent;
