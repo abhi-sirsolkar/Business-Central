@@ -83,16 +83,14 @@ page 73903 "Open AI Setup"
                         ShowCaption = false;
                     }
                 }
-                field(ExecuteLbl; ExecuteOldLbl)
+                field(ClearLbl; ClearLbl)
                 {
                     ShowCaption = false;
                     Editable = false;
                     trigger OnDrillDown()
-                    var
-                        OpenAIMgmt: Codeunit "Open AI Mgmt.";
                     begin
-                        if Input <> '' then
-                            OpenAIMgmt.GetResponseFromChatGPT(Input, false, Output);
+                        Clear(Input);
+                        Clear(Output);
                     end;
                 }
                 group(Output)
@@ -106,7 +104,7 @@ page 73903 "Open AI Setup"
                         ShowCaption = false;
                     }
                 }
-                field(ExecuteNewLbl; ExecuteNewLbl)
+                field(ShowResultLbl; ShowResultLbl)
                 {
                     ShowCaption = false;
                     Editable = false;
@@ -115,7 +113,7 @@ page 73903 "Open AI Setup"
                         OpenAIMgmt: Codeunit "Open AI Mgmt.";
                     begin
                         if Input <> '' then
-                            OpenAIMgmt.GetResponseFromChatGPT(Input, true, Output);
+                            OpenAIMgmt.GetResponseFromChatGPT(Input, Output);
                     end;
                 }
             }
@@ -134,6 +132,6 @@ page 73903 "Open AI Setup"
 
     var
         Input, Output : Text;
-        ExecuteOldLbl: Label 'Execute Old';
-        ExecuteNewLbl: Label 'Execute New';
+        ClearLbl: Label 'Clear';
+        ShowResultLbl: Label 'Show Result';
 }
