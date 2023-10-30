@@ -1,6 +1,6 @@
 codeunit 73888 "Open AI Mgmt."
 {
-    procedure GetResponseFromChatGPT(Input: Text; NewModel: Boolean; var Response: Text)
+    procedure GetResponseFromChatGPT(Input: Text; var Response: Text)
     var
         Clinet: HttpClient;
         Content: HttpContent;
@@ -11,9 +11,9 @@ codeunit 73888 "Open AI Mgmt."
         OpenAISetup.Get();
         Content.Clear();
 
-        SetChatGPTBody(Input, NewModel, ContentText);
+        SetChatGPTBody(Input, ContentText);
         Content.WriteFrom(ContentText);
-        SetChatGptHeader(Content, NewModel, RequestMsg);
+        SetChatGptHeader(Content, RequestMsg);
 
         if not Clinet.Send(RequestMsg, ResponseMsg) then
             Error('Error Sending Request %1', ResponseMsg.HttpStatusCode);
@@ -21,33 +21,23 @@ codeunit 73888 "Open AI Mgmt."
         ResponseMsg.Content.ReadAs(OutputString);
 
         if ResponseMsg.IsSuccessStatusCode then
-            Response := ParseChatGPTResponseText(OutputString, NewModel)
+            Response := ParseChatGPTResponseText(OutputString)
         else
             Error('%1', OutputString);
     end;
 
-    local procedure SetChatGPTBody(Input: Text; NewModel: Boolean; var ContentText: Text)
+    local procedure SetChatGPTBody(Input: Text; var ContentText: Text)
     var
         ChatGPTBody: JsonObject;
         ChatGPTBodyArray: JsonArray;
     begin
-        if NewModel then begin
-            ChatGPTBody.Add('model', Format(OpenAISetup.Model));
-            ChatGPTBody.Add('messages', GetChatGPTMessageArray(Input));
-        end else begin
-            ChatGPTBody.Add('model', Format(OpenAISetup."Model (Legacy)"));
-            ChatGPTBody.Add('prompt', Input);
-            ChatGPTBody.Add('max_tokens', OpenAISetup."Max Tokens");
-            ChatGPTBody.Add('temperature', OpenAISetup.Temperature);
-            ChatGPTBody.Add('top_p', OpenAISetup."Top P");
-            ChatGPTBody.Add('presence_penalty', OpenAISetup."Presence Penalty");
-            ChatGPTBody.Add('frequency_penalty', OpenAISetup."Frequency Penalty");
-            ChatGPTBody.Add('best_of', OpenAISetup."Best of");
-        end;
+        ChatGPTBody.Add('model', Format(OpenAISetup.Model));
+        ChatGPTBody.Add('messages', GetChatGPTMessageArray(Input));
+
         ChatGPTBody.WriteTo(ContentText);
     end;
 
-    local procedure SetChatGptHeader(var Content: HttpContent; NewModel: Boolean; var RequestMsg: HttpRequestMessage)
+    local procedure SetChatGptHeader(var Content: HttpContent; var RequestMsg: HttpRequestMessage)
     var
         Headers: HttpHeaders;
     begin
@@ -58,10 +48,8 @@ codeunit 73888 "Open AI Mgmt."
         Headers.Add('Authorization', 'Bearer ' + OpenAISetup."Secret Key");
 
         RequestMsg.Content(Content);
-        if NewModel then
-            RequestMsg.SetRequestUri('https://api.openai.com/v1/chat/completions')
-        else
-            RequestMsg.SetRequestUri('https://api.openai.com/v1/completions');
+        RequestMsg.SetRequestUri('https://api.openai.com/v1/chat/completions');
+
         RequestMsg.Method := 'POST';
     end;
 
@@ -74,7 +62,7 @@ codeunit 73888 "Open AI Mgmt."
         InputArray.Add(InputJsonObject);
     end;
 
-    local procedure ParseChatGPTResponseText(OutputString: Text; NewModel: Boolean): Text
+    local procedure ParseChatGPTResponseText(OutputString: Text): Text
     var
         JsonObjectResponse: JsonObject;
         JsonTokenResponse: JsonToken;
@@ -85,12 +73,9 @@ codeunit 73888 "Open AI Mgmt."
             JsonArrayResponse := JsonTokenResponse.AsArray();
             JsonArrayResponse.Get(0, JsonTokenResponse);
             JsonObjectResponse := JsonTokenResponse.AsObject();
-            if NewModel then begin
-                JsonObjectResponse.Get('message', JsonTokenResponse);
-                JsonObjectResponse := JsonTokenResponse.AsObject();
-                JsonObjectResponse.Get('content', JsonTokenResponse);
-            end else
-                JsonObjectResponse.Get('text', JsonTokenResponse);
+            JsonObjectResponse.Get('message', JsonTokenResponse);
+            JsonObjectResponse := JsonTokenResponse.AsObject();
+            JsonObjectResponse.Get('content', JsonTokenResponse);
             exit(JsonTokenResponse.AsValue().AsText());
         end;
     end;
